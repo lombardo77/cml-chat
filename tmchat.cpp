@@ -97,7 +97,7 @@ void *handle_connection(void *args) {
 			break;
 		}
 		
-		broadcast_msg(msg, clientfd);
+		broadcast_msg("<" + ip_addr + "> " + msg, clientfd);
 		cout << "<"<< ip_addr << "> " << msg << "\n";
 		memset(client_buff, 0, MAXLINE);
 		msg.clear();
@@ -107,7 +107,7 @@ void *handle_connection(void *args) {
 
 void broadcast_msg(string msg, int senderfd) {
 	for (const int &i: clients) {
-		//if (senderfd != i)
+		if (senderfd != i)
 			write(i, msg.c_str(), msg.length() + 1);
 	}
 }

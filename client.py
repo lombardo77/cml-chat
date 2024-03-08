@@ -11,7 +11,7 @@ import sys
 def listener():
     while True:
         msg = s.recv(2048).decode("ascii")
-        print(f"\rserver: {msg}", flush=True)
+        print(f"\r{msg}", flush=True)
         print("> ", end="", flush=True)
         sys.stdin.flush()
 
@@ -22,8 +22,11 @@ def handle_sigint(sig, frame):
     os._exit(0)
 
 
-signal.signal(signal.SIGINT, handle_sigint)
-HOST = socket.gethostbyname("localhost")  # The server's hostname or IP address
+ip_addr = input("Please enter the host's ip-address: ")
+
+signal.signal(signal.SIGINT, handle_sigint) # handle C-c interrupt
+
+HOST = socket.gethostbyname(ip_addr)  # The server's hostname or IP address
 PORT = 19000  # The port used by the server
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     s.connect((HOST, PORT))
