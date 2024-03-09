@@ -1,37 +1,32 @@
-#include <asm-generic/socket.h>
-#include <bits/stdc++.h>
-#include <cstddef>
-#include <cstring>
-#include <iostream>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <unistd.h>
-#include <pthread.h>
-#include <vector>
-#include <algorithm>
-
-#define PORT 19000
-#define SA struct sockaddr
-#define MAXLINE 2048
+#include "tmchat.h"
 
 using namespace std;
-
-// function prototypes
-void *handle_connection(void *args);
-void broadcast_msg(string msg, int senderfd);
-
-// structs
-typedef struct client_info {
-	int clientfd;
-	string ip_addr;
-} clinfo;
-
 // global variables
 vector<int> clients;
 
-int main (int argc, char *argv[]) {
-	int sockfd, clientfd;
+int wait_for_connection(int sockfd) {
+	int clientfd;
+	while (true) {
+		struct sockaddr_in clntaddr;
+		string ip_addr;
+		cout << "waiting for connections...\n";
+
+		socklen_t clen = sizeof(clntaddr);
+		clientfd = accept(sockfd, (SA*)&clntaddr, &clen);
+		clients.push_back(clientfd);
+
+		// once connected we send the client to a new thread
+		ip_addr = inet_ntoa(clntaddr.sin_addr);
+		cout << "We have a connection with: " << ip_addr << "\n";
+
+		clinfo cl_info = {clientfd, ip_addr};
+		pthread_t thread;
+		pthread_create(&thread, NULL, handle_connection, &cl_info);
+	}
+}
+
+int oblsock(int port) {
+	int sockfd;
 	struct sockaddr_in server;
 
 	if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
@@ -40,7 +35,7 @@ int main (int argc, char *argv[]) {
 	}
 
 	server.sin_addr.s_addr = htonl(INADDR_ANY);
-	server.sin_port = htons(PORT);
+	server.sin_port = htons(port);
 	server.sin_family = AF_INET;
 
 	int one = 1;
@@ -55,30 +50,8 @@ int main (int argc, char *argv[]) {
 		cout << "listen failed\n";
 		exit(127);
 	}
-
-	while (true) {
-		struct sockaddr_in clntaddr;
-		string ip_addr;
-		cout << "waiting for connections...\n";
-	
-		socklen_t clen = sizeof(clntaddr);
-		clientfd = accept(sockfd, (SA*)&clntaddr, &clen);
-		clients.push_back(clientfd);
-		
-		// once connected we send the client to a new thread
-		ip_addr = inet_ntoa(clntaddr.sin_addr);
-		cout << "We have a connection with: " << ip_addr << "\n";
-	
-		clinfo cl_info = {clientfd, ip_addr};
-		pthread_t thread;
-		pthread_create(&thread, NULL, handle_connection, &cl_info);
-
-	} 
-
-	return 0;
+	return sockfd;
 }
-
-#define CAST_INFO( ptr ) ((clinfo *)ptr)
 
 void *handle_connection(void *args) {
 	int clientfd = CAST_INFO(args)->clientfd;
@@ -111,4 +84,3 @@ void broadcast_msg(string msg, int senderfd) {
 			write(i, msg.c_str(), msg.length() + 1);
 	}
 }
-
