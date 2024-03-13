@@ -69,7 +69,6 @@ void *handle_connection(void *args) {
 			clients.erase(remove(clients.begin(), clients.end(), clientfd), clients.end());
 			break;
 		}
-		
 		broadcast_msg("<" + ip_addr + "> " + msg, clientfd);
 		cout << "<"<< ip_addr << "> " << msg << "\n";
 		memset(client_buff, 0, MAXLINE);
