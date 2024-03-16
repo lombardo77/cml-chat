@@ -1,1 +1,8 @@
-Terminal chat application. The server is written in C++ and uses the socket API. The client is written in Python, and the TUI uses the Textual library. This is a toy project and it is not safe for deployment yet.
+Terminal chat application. The server is written in C++ and uses the socket API. The client is written in Python, and the TUI uses the Textual library. This is a toy project, and it is not safe for deployment yet. 
+
+To run it:
+<ol>
+  <li>run Make in the src directory/li>
+  <li>run the client executable in /src</li>
+  <li>run python3 client-tui.py</li>
+</ol>
