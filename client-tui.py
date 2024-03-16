@@ -41,7 +41,6 @@ class Chat(Static):
             self.post_message(self.Inmsg(msg))
 
 
-
 class Myapp(App):
     def on_mount(self):
         self.mount(Input(placeholder="message", id="input"))
@@ -51,8 +50,6 @@ class Myapp(App):
         chat = self.query_one("#chat", Chat)
         self.mount(Label("<me> " + event.value))
         chat.sock.send(str.encode(event.value))
-        if event.value == "exit":
-            os._exit(0)
         event.value = ""
 
     def on_chat_inmsg(self, event: Chat.Inmsg):

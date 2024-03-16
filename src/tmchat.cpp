@@ -1,4 +1,10 @@
 #include "tmchat.h"
+#include <sys/socket.h>
+#include <unistd.h>
+
+
+#define LEAVE_PROMPT "are you sure you want to leave?"
+#define LEAVE_PROMPT_SIZE sizeof(LEAVE_PROMPT) 
 
 using namespace std;
 // global variables
@@ -63,7 +69,15 @@ void *handle_connection(void *args) {
 		// read client msg and send to all other chatters
 		read(clientfd, client_buff, MAXLINE);
 		msg = client_buff;
-		if (msg == "exit") {
+		if (msg == "exit" || msg == " ") {
+			memset(client_buff, 0, MAXLINE);
+			msg.clear();
+			write(clientfd, LEAVE_PROMPT, LEAVE_PROMPT_SIZE);
+			read(clientfd, client_buff, MAXLINE);
+			msg = client_buff;
+			if (msg == "n") {
+				continue;
+			}
 			close(clientfd);
 			cout << ip_addr << " has left the chat\n";
 			clients.erase(remove(clients.begin(), clients.end(), clientfd), clients.end());
