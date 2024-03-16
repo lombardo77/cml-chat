@@ -1,5 +1,1 @@
-Silly goose little terminal chat application. To run simply execute
-the chat.py file. There you will be prompted with a choice: either i)
-you run a C++ server which will host the chat room or ii) you run a 
-client. If you run the client, you will have to input the name of the 
-host.
+Terminal chat application. The server is written in C++ and uses the socket API. The client is written in Python, and the TUI uses the Textual library. This is a toy project and it is not safe for deployment yet.
