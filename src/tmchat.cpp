@@ -69,22 +69,16 @@ void *handle_connection(void *args) {
 		// read client msg and send to all other chatters
 		read(clientfd, client_buff, MAXLINE);
 		msg = client_buff;
-		if (msg == "exit" || msg == " ") {
+		if (msg == "exit" || msg.length() == 0) {
 			memset(client_buff, 0, MAXLINE);
-			msg.clear();
-			write(clientfd, LEAVE_PROMPT, LEAVE_PROMPT_SIZE);
-			read(clientfd, client_buff, MAXLINE);
 			msg = client_buff;
-			if (msg == "n") {
-				continue;
-			}
 			close(clientfd);
 			cout << ip_addr << " has left the chat\n";
 			clients.erase(remove(clients.begin(), clients.end(), clientfd), clients.end());
 			break;
 		}
 		broadcast_msg("<" + ip_addr + "> " + msg, clientfd);
-		cout << "<"<< ip_addr << "> " << msg << "\n";
+		cout << "<"<< ip_addr << "> " << msg << " " << msg.length() <<"\n";
 		memset(client_buff, 0, MAXLINE);
 		msg.clear();
 	}

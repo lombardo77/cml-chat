@@ -1,14 +1,18 @@
 from textual.app import App
+from textual import on
 from textual.message import Message
 from textual.widgets import Static, Header, Footer, Input, Label
 import socket
 import threading as threads
 import time
-import os
 
 
 class Chat(Static):
     sock = None
+
+    def __init__(self, ip_addr, *args, **kwargs):
+        self.ip_addr = ip_addr
+        super().__init__(*args, **kwargs)
 
     class Inmsg(Message):
         def __init__(self, msg):
@@ -16,7 +20,6 @@ class Chat(Static):
             super().__init__()
 
     def on_mount(self):
-        self.mount(Label("chat"))
         conn = threads.Thread(target=self.conn_server)
         conn.daemon = True
         conn.start()
@@ -25,7 +28,7 @@ class Chat(Static):
         lis.start()
 
     def conn_server(self):
-        HOST = socket.gethostbyname("127.0.0.1")
+        HOST = socket.gethostbyname(self.ip_addr)
         PORT = 19000
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             s.connect((HOST, PORT))
@@ -42,18 +45,43 @@ class Chat(Static):
 
 
 class Myapp(App):
-    def on_mount(self):
-        self.mount(Input(placeholder="message", id="input"))
-        self.mount(Chat(id="chat"))
+    CSS = """
+    .me {
+        border: ascii blue;
+    }
 
-    def on_input_submitted(self, event: Input.Submitted):
+    .others {
+        border: ascii white;
+    }
+    """
+
+    def on_mount(self):
+        self.mount(Input(placeholder="Host IP", id="ip-addr"))
+        # self.mount(Input(placeholder="Access Key", id="key"))
+
+    @on(Input.Submitted, "#input")
+    def msg_submitted(self):
         chat = self.query_one("#chat", Chat)
-        self.mount(Label("<me> " + event.value))
-        chat.sock.send(str.encode(event.value))
-        event.value = ""
+        input = self.query_one("#input", Input)
+        self.mount(Label("<me> " + input.value, classes="me"))
+        chat.sock.send(str.encode(input.value))
+        input.value = ""
 
     def on_chat_inmsg(self, event: Chat.Inmsg):
-        self.mount(Label(event.msg))
+        self.mount(Label(event.msg, classes="others"))
+
+    @on(Input.Submitted, "#ip-addr")
+    def ipaddr_submitted(self):
+        ip_addr_item = self.query_one("#ip-addr", Input)
+        ip_addr = ip_addr_item.value
+        ip_addr_item.remove()
+        self.mount(Input(placeholder="message", id="input"))
+        self.mount(Chat(ip_addr, id="chat"))
+
+
+    @on(Input.Submitted, "#ip-addr")
+    def key_submitted(self):
+        pass
 
 
 if __name__ == "__main__":
